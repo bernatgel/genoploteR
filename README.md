@@ -5,7 +5,7 @@
 
 ## Description
 
-This is the initial work on a package to plot data on genes. It is based on and heavily influenced by [karyoploteR](https://github.com/bernatgel/karyoploteR)). 
+This is the initial work on a package to plot data on genes. It is based on and heavily influenced by [karyoploteR](https://github.com/bernatgel/karyoploteR). 
 
 The idea is to create a package internally using the karyoploteR infrastructure to plot any type of data on genes. The user should provide somehow (manually, from a TxDb object...) the structure of a transcript or gene (exons, introns...) and be able to plot data on it using either low level functions such as points or lines or higher level functions to plot more specialized data (BAM coverage, mutations...).
 

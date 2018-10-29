@@ -25,6 +25,11 @@ There are a few use cases in our group, for example
   * contextualizing the position of an unclassified variant on a transcript with respect to other known variants, protein domains...
   * plotting the distribution of pathogenic and non-pathogenic variants on a gene
   
+But there are many other possible use cases
+
+  * plotting the common SNPs overlapping the TFBS in a gene promoter
+  * plotting the splicing factor motifs around exons for a give gene
+  
   
 but the package should be flexible enough to basically plot anything on a gene
 

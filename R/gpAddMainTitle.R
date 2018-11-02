@@ -8,7 +8,7 @@
 #'
 #' Given a GenoPlot object and a character string, plot the character strings
 #' as the main title of the plot. This function is usually automatically
-#' called by \link{\code{plotGene}}.
+#' called by \code{\link{plotGene}}.
 #'
 #' @usage gpAddMainTitle(genoplot, main=NULL, ...)
 #'

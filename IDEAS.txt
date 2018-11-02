@@ -1,0 +1,6 @@
+
+
+MUNTAR una funció tipus prepare parameters 2 que
+preprocessi les dades (transfrmció de cdna a genomic? o fer-ho fora en un a una funcio auxiliar?)
+
+Pero aquesta hauria d etraduir el data.panel="gene"  a data.panel="ideogram"

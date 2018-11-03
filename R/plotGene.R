@@ -86,9 +86,14 @@ plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL,
 
   gp$regions <- regions
 
+
+  #TODO: Decide how to manage the genome specification. Should we use a genome? Could be useful if we want to automatically add the sequence...
+  #Create a custom genome for karyoploteR with the plot region only (will speed up some functions)
+  cust.genome <- gp$total.plot.region
+
   #Create the plot
   #Start creating an empty karyoplot (zoomed in on the correct chromosome) and get the KaryoPlot object
-  gp$global.kp <- karyoploteR::plotKaryotype(zoom=exons[1], plot.type=2, labels.plotter = NULL, ideogram.plotter = NULL, plot.params=plot.params) #The zoom used here is not used to plot anything, but sets kp in the correct state
+  gp$global.kp <- karyoploteR::plotKaryotype(zoom=exons[1], plot.type=2, labels.plotter = NULL, ideogram.plotter = NULL, plot.params=plot.params, genome=cust.genome) #The zoom used here is not used to plot anything, but sets kp in the correct state
 
   #And prepare the list of KaryoPlot objecrts needed to plot
   #Now create a modified copy of this KaryoPlot adapted to each plotted region

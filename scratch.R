@@ -19,6 +19,13 @@ gpAddGeneStructure(gp)
 plotGene(exons = exons)
 
 
+#Example with pasilla data bam coverage
+exons <- toGRanges(c("chr4:340600-340900", "chr4:341300-341700", "chr4:343500-345500", "chr4:348400-348800"))
+exons$type <- "coding"
+gp <- plotGene(exons)
+
+
+
 #data background
 for(i in seq_len(length(regions))) {
 

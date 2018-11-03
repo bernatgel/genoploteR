@@ -13,8 +13,8 @@ non.coding.exons$type <- "non.coding"
 exons <- sort(toGRanges(c(coding.exons, non.coding.exons), "hg19"))
 
 
-plotGene(exons=exons)
-
+gp <- plotGene(exons=exons)
+gpAddGeneStructure(gp)
 
 plotGene(exons = exons)
 
@@ -33,3 +33,6 @@ for(i in seq_len(length(regions))) {
 
 roxygen2::roxygenise()
 
+
+
+sessionInfo()

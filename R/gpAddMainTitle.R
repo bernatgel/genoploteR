@@ -23,8 +23,8 @@
 #'
 #' @examples
 #'
-# kp <- plotKaryotype(labels.plotter = NULL)
-# gpAddMainTitle(kp, col="red", srt=30)
+#' gp <- plotGene(exons=c("chr1:100-200", "chr2:300-350"))
+#' gpAddMainTitle(gp, main="EXAMPLE", col="red", srt=30)
 #'
 #' @export gpAddMainTitle
 #'

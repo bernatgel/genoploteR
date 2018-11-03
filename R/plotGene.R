@@ -19,8 +19,6 @@
 #'
 #' @examples
 #'
-#' gp <- plotGene(exons=c("chr1:100-200", "chr2:300-350"))
-#' gpAddMainTitle(gp, main="EXAMPLE", col="red", srt=30)
 #'
 #'
 #'
@@ -36,7 +34,7 @@
 #coding and non-coding exons or a TxDb and transcript name?
 #Or maybe the trasformation from transcript should be done outside
 #in an exernal function
-plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL) {
+plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
   #TODO: Check parameters
 
   #Get plot params given the plot.type
@@ -62,6 +60,7 @@ plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL)
     available.space <- 1 - plot.params$leftmargin - plot.params$rightmargin - internal.margin
     exons.space.per.base <- available.space/total.plot.length.bases
     regions <- exons #Plot only the exons
+    regions <- regioneR::joinRegions(regions, min.dist = 1)
     regions$space.per.base <- exons.space.per.base
   } else if(plot.type=="compressed.introns.proportional") {
     stop("Unimplemented plot.type")
@@ -128,7 +127,7 @@ plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL)
     #Build the region specific karyoplot
     reg.kp <- gp$global.kp
       #Set the plot.params
-        reg.kp$plot.params <- gp$global.kp$kp$plot.params
+        reg.kp$plot.params <- gp$global.kp$plot.params
         reg.kp$plot.params$leftmargin <- left.margin
         reg.kp$plot.params$rightmargin <- right.margin
 
@@ -157,6 +156,9 @@ plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL)
   #As a convenience (and to not create an empty plot by default) optionally plot a few elements
 
   #TODO: Plot the exon/intron structure
+  if(!is.null(gene.plotter)) {
+    gene.plotter(gp, ...)
+  }
 
   #TODO: Plot the name of the gene/transcript...
 

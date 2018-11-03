@@ -9,9 +9,9 @@ plotGene()
 \arguments{
 \item{main}{(character) the main title of the plot}
 
-\item{genoplot}{a \code{GenoPlot} object returned by a call to \code{plotGene}}
-
 \item{...}{any additional parameter to be passed to the text plotting. All R base graphics params are passed along.}
+
+\item{genoplot}{a \code{GenoPlot} object returned by a call to \code{plotGene}}
 }
 \value{
 invisibly returns the given GenoPlot object
@@ -24,8 +24,6 @@ Plots the main title of the plot
 }
 \examples{
 
-gp <- plotGene(exons=c("chr1:100-200", "chr2:300-350"))
-gpAddMainTitle(gp, main="EXAMPLE", col="red", srt=30)
 
 
 

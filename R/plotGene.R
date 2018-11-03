@@ -25,6 +25,12 @@
 #' @export plotGene
 
 
+addMargins <- function(regs, inner.margin, outer.margin) {
+  regs <- extendRegions(regs, inner.margin, inner.margin)
+  regs[1] <- extendRegions(regs[1], extend.start = outer.margin - inner.margin)
+  regs[length(regs)] <- extendRegions(regs[length(regs)], extend.end = outer.margin - inner.margin)
+  return(regs)
+}
 
 
 
@@ -34,7 +40,7 @@
 #coding and non-coding exons or a TxDb and transcript name?
 #Or maybe the trasformation from transcript should be done outside
 #in an exernal function
-plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
+plotGene <- function(exons, plot.type="only.exons", intron.to.exon.ratio=0.1, main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
   #TODO: Check parameters
 
   #Get plot params given the plot.type
@@ -42,28 +48,51 @@ plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL,
     plot.params <- getDefaultPlotParams(plot.type=plot.type)
   }
 
-  exons <- toGRanges(exons) #So it's possible to give them in any valid format
+  exons <- sort(toGRanges(exons)) #So it's possible to give them in any valid format
 
   total.gene.region <- toGRanges(seqnames(exons[1]), start(exons[1]), end(exons[length(exons)]))
-  introns <-subtractRegions(total.gene.region, exons)
+  introns <- subtractRegions(total.gene.region, exons)
+  introns$type <- "intron"
+
+  #TODO: If the intron between two exons is shorter than twice the inner margin, join the exons (and the intron) into a single region
 
 
   #TODO: To implement a zoom, we should intersect the exons (and introns!) with the zoom region and continue as usual but keeping their mcols
 
   #Compute the region size values for the selected plot.type
   #Case 1: only exons visible (remove introns)
-  if(plot.type=="only.exons") {
-    total.plot.length.bases <-sum(width(exons)) + #The actual regions to plot
-                              2*plot.params$inner.margin.bases*(length(exons)-1) + #The margin in bases between the regions
-                              2*plot.params$outer.margin.bases #The margin in the outer ends of the first and last region
+  if(plot.type=="only.exons" || plot.type=="oe") {
+    ex.regs <-  regioneR::joinRegions(exons, min.dist = 1)
+    ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
+
     internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
     available.space <- 1 - plot.params$leftmargin - plot.params$rightmargin - internal.margin
-    exons.space.per.base <- available.space/total.plot.length.bases
-    regions <- exons #Plot only the exons
-    regions <- regioneR::joinRegions(regions, min.dist = 1)
-    regions$space.per.base <- exons.space.per.base
-  } else if(plot.type=="compressed.introns.proportional") {
-    stop("Unimplemented plot.type")
+
+    exons.space.per.base <- available.space/sum(width(ex.regs))
+
+    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
+    regions <- ex.regs #Plot only the exons
+
+  } else if(plot.type=="compressed.introns.proportional" || plot.type=="cip") {
+    internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
+    available.space <- 1 - plot.params$leftmargin - plot.params$rightmargin - internal.margin
+
+    ex.regs <- regioneR::joinRegions(exons, min.dist = 1) #Join contiguous coding and non-coding exons into single regions
+    ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
+
+    in.regs <- extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
+
+    exons.bases <- sum(width(ex.regs))
+    introns.bases <- sum(width(in.regs))
+    adjusted.total.bases <- exons.bases + introns.bases*intron.to.exon.ratio
+
+    exons.space.per.base <- available.space/adjusted.total.bases
+    introns.space.per.base <- exons.space.per.base*intron.to.exon.ratio
+
+    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
+    mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
+    regions <- sort(c(ex.regs, in.regs))
+
   } else if(plot.type=="compressed.introns.all.equal") {
     stop("Unimplemented plot.type")
   } else {
@@ -99,25 +128,12 @@ plotGene <- function(exons, plot.type="only.exons", main=NULL, plot.params=NULL,
   #Now create a modified copy of this KaryoPlot adapted to each plotted region
   gp$regions.kp <- list()
   #Iteratively make the left margin bigger to plot each region at its position
-  last.region.end <- gp$global.kp$plot.params$leftmargin
+  last.region.end <- gp$global.kp$plot.params$leftmargin - plot.params$margin.between.regions #The first region will cancel this between regions margin
   for(num.reg in seq_len(length(regions))) {
     r <- regions[num.reg]
+    region.size <- width(r)*r$space.per.base
+    left.margin <- last.region.end + plot.params$margin.between.regions
 
-    if(num.reg==1) { #If the first region, add the out margin on the left and do not add the margin between regions to the last left
-      r <- extendRegions(r, extend.start = plot.params$outer.margin.bases, extend.end = plot.params$inner.margin.bases)
-      region.size <- width(r)*r$space.per.base #The space per base may be different for each region
-      left.margin <- last.region.end
-    } else {
-      if(num.reg==length(regions)) { #If it's the last region, add the out margin to the right
-        r <- extendRegions(r, extend.start = plot.params$inner.margin.bases, extend.end = plot.params$outer.margin.bases)
-        region.size <- width(r)*r$space.per.base #The space per base may be different for each region
-        left.margin <- last.region.end + plot.params$margin.between.regions
-      } else { #if any other region, just add the regular intron-exon margins
-        r <- extendRegions(r, extend.start = plot.params$inner.margin.bases, extend.end = plot.params$inner.margin.bases)
-        region.size <- width(r)*r$space.per.base #The space per base may be different for each region
-        left.margin <- last.region.end + plot.params$margin.between.regions
-      }
-    }
     right.margin <- 1 - left.margin - region.size
     last.region.end <- 1 - right.margin
 

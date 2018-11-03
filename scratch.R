@@ -20,22 +20,28 @@ plotGene(exons = exons)
 
 
 #Example with pasilla data bam coverage
+
+library(pasillaBamSubset) #A package with 2 example bam files
+un1.bam.file <- untreated1_chr4() # get the name of the first bam
+un3.bam.file <- untreated3_chr4() #and the name of the second
+
+kp <- kpPlotBAMCoverage(kp, data = un1.bam.file) #Warning and does not plot. region too large.
+kp <- kpPlotBAMCoverage(kp, data = un1.bam.file, max.valid.region.size=2000000)
+
+
 exons <- toGRanges(c("chr4:340600-340900", "chr4:341300-341700", "chr4:343500-345500", "chr4:348400-348800"))
 exons$type <- "coding"
-gp <- plotGene(exons)
 
+pp <- getDefaultPlotParams(plot.type = "cip")
+pp$inner.margin.bases <- 50
+pp$outer.margin.bases <- 200
+gp <- plotGene(exons, plot.type="cip", plot.params = pp)
 
+gp <- plotGene(exons, plot.type="cip")
+gpPlotBAMCoverage(gp, data=un1.bam.file)
+gpAddBaseNumbers(gp)
+gpAbline(gp, chr="chr4", v=c(340600, 340900, 340940))
 
-#data background
-for(i in seq_len(length(regions))) {
-
-  kpDataBackground(regions.kp[[i]], data.panel = 1, color = rainbow(length(regions))[i])
-  kpAbline(regions.kp[[i]], v=start(regions[i]), h=0.5)
-  #r <- regions[i]
-  #height <- ifelse(r$type=="coding", 0.8, 0.4)
-  #kpAbline(regions.kp[[i]], h=0.5, clipping=TRUE)
-  #kpRect(regions.kp[[i]], data=extendRegions(regions[i], extend.end = 100), y0=0.5-height/2, y1=0.5+height/2)
-}
 
 
 roxygen2::roxygenise()

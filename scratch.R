@@ -29,18 +29,19 @@ kp <- kpPlotBAMCoverage(kp, data = un1.bam.file) #Warning and does not plot. reg
 kp <- kpPlotBAMCoverage(kp, data = un1.bam.file, max.valid.region.size=2000000)
 
 
-exons <- toGRanges(c("chr4:340600-340900", "chr4:341300-341700", "chr4:343500-345500", "chr4:348400-348800"))
+exons <- toGRanges(c("chr4:340600-340900", "chr4:341300-341700", "chr4:343500-345000", "chr4:348400-348800"))
 exons$type <- "coding"
 
-pp <- getDefaultPlotParams(plot.type = "cip")
+pp <- getDefaultPlotParams(show.introns = TRUE)
 pp$inner.margin.bases <- 50
 pp$outer.margin.bases <- 200
-gp <- plotGene(exons, plot.type="cip", intron.to.exon.ratio = 0.3, plot.params = pp)
+gp <- plotGene(exons, show.introns = TRUE, intron.to.exon.ratio = 0.3, plot.params = pp)
 
-gp <- plotGene(exons, show.introns = TRUE, proportional.introns = FALSE)
+gp <- plotGene(exons, show.introns = TRUE, proportional.introns = FALSE, intron.length = 600)
 gpPlotBAMCoverage(gp, data=un1.bam.file)
 gpAddBaseNumbers(gp)
 gpAbline(gp, chr="chr4", v=c(340600, 340900, 340940))
+width(gp$regions)
 
 
 

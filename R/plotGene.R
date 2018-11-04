@@ -46,7 +46,7 @@ selectPlotType <- function(show.introns=FALSE, compress.introns=TRUE, proportion
 #coding and non-coding exons or a TxDb and transcript name?
 #Or maybe the trasformation from transcript should be done outside
 #in an exernal function
-plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportional.introns=TRUE, intron.to.exon.ratio=0.1, main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
+plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportional.introns=TRUE, intron.to.exon.ratio=0.1, intron.length=200, main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
   #TODO: Check parameters
 
   plot.type <- selectPlotType(show.introns=show.introns, compress.introns=compress.introns, proportional.introns=proportional.introns)
@@ -102,7 +102,24 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     regions <- sort(c(ex.regs, in.regs))
 
   } else if(plot.type=="compressed.introns.all.equal") {
+    internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
+    available.space <- 1 - plot.params$leftmargin - plot.params$rightmargin - internal.margin
 
+    ex.regs <- regioneR::joinRegions(exons, min.dist = 1) #Join contiguous coding and non-coding exons into single regions
+    ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
+
+    in.regs <- extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
+
+    exons.bases <- sum(width(ex.regs))
+    introns.bases <- length(in.regs)*intron.length
+    adjusted.total.bases <- exons.bases + introns.bases
+
+    exons.space.per.base <- available.space/adjusted.total.bases
+    introns.space.per.base <- exons.space.per.base*intron.length/width(in.regs)
+
+    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
+    mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
+    regions <- sort(c(ex.regs, in.regs))
 
   } else {
     stop("Invalid plot.type ", plot.type)

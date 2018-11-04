@@ -33,6 +33,12 @@ addMargins <- function(regs, inner.margin, outer.margin) {
 }
 
 
+selectPlotType <- function(show.introns=FALSE, compress.introns=TRUE, proportional.introns=TRUE) {
+  if(show.introns==FALSE) return("only.exons")
+  if(compress.introns==FALSE) return("all")
+  if(proportional.introns==TRUE) return("compressed.introns.proportional")
+  else return("compressed.introns.all.equal")
+}
 
 
 #If the function name is plotGene, regions should be called exons.
@@ -40,12 +46,14 @@ addMargins <- function(regs, inner.margin, outer.margin) {
 #coding and non-coding exons or a TxDb and transcript name?
 #Or maybe the trasformation from transcript should be done outside
 #in an exernal function
-plotGene <- function(exons, plot.type="only.exons", intron.to.exon.ratio=0.1, main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
+plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportional.introns=TRUE, intron.to.exon.ratio=0.1, main=NULL, plot.params=NULL, gene.plotter=gpAddGeneStructure, ...) {
   #TODO: Check parameters
+
+  plot.type <- selectPlotType(show.introns=show.introns, compress.introns=compress.introns, proportional.introns=proportional.introns)
 
   #Get plot params given the plot.type
   if(is.null(plot.params)) {
-    plot.params <- getDefaultPlotParams(plot.type=plot.type)
+    plot.params <- getDefaultPlotParams(show.introns=show.introns, compress.introns=compress.introns, proportional.introns=proportional.introns)
   }
 
   exons <- sort(toGRanges(exons)) #So it's possible to give them in any valid format
@@ -61,7 +69,7 @@ plotGene <- function(exons, plot.type="only.exons", intron.to.exon.ratio=0.1, ma
 
   #Compute the region size values for the selected plot.type
   #Case 1: only exons visible (remove introns)
-  if(plot.type=="only.exons" || plot.type=="oe") {
+  if(plot.type=="only.exons") {
     ex.regs <-  regioneR::joinRegions(exons, min.dist = 1)
     ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
 
@@ -73,7 +81,7 @@ plotGene <- function(exons, plot.type="only.exons", intron.to.exon.ratio=0.1, ma
     mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
     regions <- ex.regs #Plot only the exons
 
-  } else if(plot.type=="compressed.introns.proportional" || plot.type=="cip") {
+  } else if(plot.type=="compressed.introns.proportional") {
     internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
     available.space <- 1 - plot.params$leftmargin - plot.params$rightmargin - internal.margin
 
@@ -94,7 +102,8 @@ plotGene <- function(exons, plot.type="only.exons", intron.to.exon.ratio=0.1, ma
     regions <- sort(c(ex.regs, in.regs))
 
   } else if(plot.type=="compressed.introns.all.equal") {
-    stop("Unimplemented plot.type")
+
+
   } else {
     stop("Invalid plot.type ", plot.type)
   }

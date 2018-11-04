@@ -35,9 +35,9 @@ exons$type <- "coding"
 pp <- getDefaultPlotParams(plot.type = "cip")
 pp$inner.margin.bases <- 50
 pp$outer.margin.bases <- 200
-gp <- plotGene(exons, plot.type="cip", plot.params = pp)
+gp <- plotGene(exons, plot.type="cip", intron.to.exon.ratio = 0.3, plot.params = pp)
 
-gp <- plotGene(exons, plot.type="cip")
+gp <- plotGene(exons, show.introns = TRUE, proportional.introns = FALSE)
 gpPlotBAMCoverage(gp, data=un1.bam.file)
 gpAddBaseNumbers(gp)
 gpAbline(gp, chr="chr4", v=c(340600, 340900, 340940))
@@ -46,6 +46,6 @@ gpAbline(gp, chr="chr4", v=c(340600, 340900, 340940))
 
 roxygen2::roxygenise()
 
-
+library(TxDb.)
 
 sessionInfo()

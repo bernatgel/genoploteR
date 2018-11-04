@@ -121,6 +121,26 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
     regions <- sort(c(ex.regs, in.regs))
 
+  } else if(plot.type=="all") {
+    internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
+    available.space <- 1 - plot.params$leftmargin - plot.params$rightmargin - internal.margin
+
+    ex.regs <- regioneR::joinRegions(exons, min.dist = 1) #Join contiguous coding and non-coding exons into single regions
+    ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
+
+    in.regs <- extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
+
+    exons.bases <- sum(width(ex.regs))
+    introns.bases <- sum(width(in.regs))
+    adjusted.total.bases <- exons.bases + introns.bases
+
+    exons.space.per.base <- available.space/adjusted.total.bases
+    introns.space.per.base <- exons.space.per.base
+
+    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
+    mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
+    regions <- sort(c(ex.regs, in.regs))
+
   } else {
     stop("Invalid plot.type ", plot.type)
   }

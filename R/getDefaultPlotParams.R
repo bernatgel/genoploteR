@@ -38,6 +38,16 @@ getDefaultPlotParams <- function(show.introns=FALSE, compress.introns=TRUE, prop
     pp$inner.margin.bases <- 5
     pp$margin.between.regions <- 0
     return(pp)
+  } else if(plot.type=="all") {
+
+    pp <- karyoploteR::getDefaultPlotParams(plot.type=2)
+    #TODO: Modify any default values to adjust to our needs
+
+    #Add genoploteR specific values
+    pp$outer.margin.bases <- 10
+    pp$inner.margin.bases <- 5
+    pp$margin.between.regions <- 0
+    return(pp)
   }
   stop("getDefaultPlotParams: plot type not found: ", plot.type)
 }

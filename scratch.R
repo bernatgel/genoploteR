@@ -42,8 +42,8 @@ gpPlotBAMCoverage(gp, data=un1.bam.file)
 gpSegments(gp, chr="chr4", x0=340600, y0=1, x1=348800, y1=0)
 gpAddBaseNumbers(gp)
 gpAbline(gp, chr="chr4", v=c(340600, 340900, 340940))
-width(gp$regions)
 
+gpAddGeneLabel(gp, "Gene1")
 
 
 roxygen2::roxygenise()

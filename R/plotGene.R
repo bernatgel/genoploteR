@@ -183,13 +183,6 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     right.margin <- 1 - left.margin - region.size
     last.region.end <- 1 - right.margin
 
-    #DEBUG
-    gp$global.kp$beginKpPlot()
-    abline(v=left.margin)
-    abline(v=1-right.margin)
-    text(y=gp$global.kp$chromosome.height/2, x=mean(c(left.margin, (1-right.margin))), labels = num.reg)
-    gp$global.kp$endKpPlot()
-    #END DEBUG
 
     #Build the region specific karyoplot
     reg.kp <- gp$global.kp

@@ -14,6 +14,7 @@ genomicTocDNA <- function(genoplot, g.pos) {
   if(g.pos<=end(genoplot$exons)[ex.num]) { #If it's exonic
     return(g.pos - start(genoplot$exons[ex.num]) + exon.cum.width[ex.num] + 1)
   } else { #if it's intronic (or UTR 3')
+    #TODO: Depending on the distance to the previous and next exons, define as XXX+yy or ZZZ-ww
     return(paste0(exon.cum.width[ex.num+1], "+", g.pos - end(genoplot$exons[ex.num]) ))
   }
 }

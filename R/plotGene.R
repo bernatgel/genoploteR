@@ -161,6 +161,8 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
 
   gp$regions <- regions
 
+  gp$chromosome <- as.character(seqnames(regions)[1])
+
 
   #TODO: Decide how to manage the genome specification. Should we use a genome? Could be useful if we want to automatically add the sequence...
   #Create a custom genome for karyoploteR with the plot region only (will speed up some functions)
@@ -202,6 +204,7 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
         reg.kp$coord.change.function <- karyoploteR:::getCoordChangeFunctions(reg.kp)$coordChangeFunction
 
     #Store the new kp in the list
+    class(reg.kp) <- "KaryoPlot"
     gp$regions.kp[[num.reg]] <- reg.kp
   }
 

@@ -37,7 +37,8 @@ pp$inner.margin.bases <- 50
 pp$outer.margin.bases <- 200
 gp <- plotGene(exons, show.introns = TRUE, intron.to.exon.ratio = 0.3, plot.params = pp)
 
-gp <- plotGene(exons, show.introns = TRUE, compress.introns = FALSE, proportional.introns = TRUE, intron.length = 600)
+gp <- plotGene(exons, show.introns = FALSE, compress.introns = FALSE, proportional.introns = TRUE, intron.length = 600)
+gpAddBaseNumbers(gp, srt=45, cex=0.8, cDNA=TRUE, add.units = FALSE, position="custom", data.panel=1, r0=0, r1=0.2)
 gpPlotBAMCoverage(gp, data=un1.bam.file)
 gpSegments(gp, chr="chr4", x0=340600, y0=1, x1=348800, y1=0)
 gpAddBaseNumbers(gp)

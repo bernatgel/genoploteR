@@ -4,7 +4,8 @@
 \alias{getDefaultPlotParams}
 \title{getDefaultPlotParams}
 \usage{
-getDefaultPlotParams(plot.type)
+getDefaultPlotParams(show.introns = FALSE, compress.introns = TRUE,
+  proportional.introns = TRUE)
 }
 \description{
 getDefaultPlotParams

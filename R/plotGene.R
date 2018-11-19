@@ -23,6 +23,9 @@
 #'
 #'
 #' @export plotGene
+#' @import karyoploteR
+#' @importFrom S4Vectors DataFrame
+#' @importFrom GenomicRanges sort
 
 
 addMargins <- function(regs, inner.margin, outer.margin) {
@@ -56,10 +59,10 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     plot.params <- getDefaultPlotParams(show.introns=show.introns, compress.introns=compress.introns, proportional.introns=proportional.introns)
   }
 
-  exons <- sort(toGRanges(exons)) #So it's possible to give them in any valid format
+  exons <- GenomicRanges::sort(toGRanges(exons)) #So it's possible to give them in any valid format
 
-  total.gene.region <- toGRanges(seqnames(exons[1]), start(exons[1]), end(exons[length(exons)]))
-  introns <- subtractRegions(total.gene.region, exons)
+  total.gene.region <- regioneR::toGRanges(seqnames(exons[1]), start(exons[1]), end(exons[length(exons)]))
+  introns <- regioneR::subtractRegions(total.gene.region, exons)
   introns$type <- "intron"
 
   #TODO: If the intron between two exons is shorter than twice the inner margin, join the exons (and the intron) into a single region
@@ -78,7 +81,7 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
 
     exons.space.per.base <- available.space/sum(width(ex.regs))
 
-    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
+    mcols(ex.regs) <- S4Vectors::DataFrame(space.per.base=exons.space.per.base)
     regions <- ex.regs #Plot only the exons
 
   } else if(plot.type=="compressed.introns.proportional") {
@@ -88,7 +91,7 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     ex.regs <- regioneR::joinRegions(exons, min.dist = 1) #Join contiguous coding and non-coding exons into single regions
     ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
 
-    in.regs <- extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
+    in.regs <- regioneR::extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
 
     exons.bases <- sum(width(ex.regs))
     introns.bases <- sum(width(in.regs))
@@ -97,9 +100,9 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     exons.space.per.base <- available.space/adjusted.total.bases
     introns.space.per.base <- exons.space.per.base*intron.to.exon.ratio
 
-    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
-    mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
-    regions <- sort(c(ex.regs, in.regs))
+    mcols(ex.regs) <- S4Vectors::DataFrame(space.per.base=exons.space.per.base)
+    mcols(in.regs) <- S4Vectors::DataFrame(space.per.base=introns.space.per.base)
+    regions <- GenomicRanges::sort(c(ex.regs, in.regs))
 
   } else if(plot.type=="compressed.introns.all.equal") {
     internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
@@ -108,7 +111,7 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     ex.regs <- regioneR::joinRegions(exons, min.dist = 1) #Join contiguous coding and non-coding exons into single regions
     ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
 
-    in.regs <- extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
+    in.regs <- regioneR::extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
 
     exons.bases <- sum(width(ex.regs))
     introns.bases <- length(in.regs)*intron.length
@@ -117,9 +120,9 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     exons.space.per.base <- available.space/adjusted.total.bases
     introns.space.per.base <- exons.space.per.base*intron.length/width(in.regs)
 
-    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
-    mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
-    regions <- sort(c(ex.regs, in.regs))
+    mcols(ex.regs) <- S4Vectors::DataFrame(space.per.base=exons.space.per.base)
+    mcols(in.regs) <- S4Vectors::DataFrame(space.per.base=introns.space.per.base)
+    regions <- GenomicRanges::sort(c(ex.regs, in.regs))
 
   } else if(plot.type=="all") {
     internal.margin <- plot.params$margin.between.regions*(length(exons)-1)
@@ -128,7 +131,7 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     ex.regs <- regioneR::joinRegions(exons, min.dist = 1) #Join contiguous coding and non-coding exons into single regions
     ex.regs <- addMargins(ex.regs, inner.margin = plot.params$inner.margin.bases, outer.margin = plot.params$outer.margin.bases)
 
-    in.regs <- extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
+    in.regs <- regioneR::extendRegions(introns, -1*plot.params$inner.margin.bases, -1*plot.params$inner.margin.bases)
 
     exons.bases <- sum(width(ex.regs))
     introns.bases <- sum(width(in.regs))
@@ -137,9 +140,9 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
     exons.space.per.base <- available.space/adjusted.total.bases
     introns.space.per.base <- exons.space.per.base
 
-    mcols(ex.regs) <- DataFrame(space.per.base=exons.space.per.base)
-    mcols(in.regs) <- DataFrame(space.per.base=introns.space.per.base)
-    regions <- sort(c(ex.regs, in.regs))
+    mcols(ex.regs) <- S4Vectors::DataFrame(space.per.base=exons.space.per.base)
+    mcols(in.regs) <- S4Vectors::DataFrame(space.per.base=introns.space.per.base)
+    regions <- GenomicRanges::sort(c(ex.regs, in.regs))
 
   } else {
     stop("Invalid plot.type ", plot.type)
@@ -172,7 +175,7 @@ plotGene <- function(exons, show.introns=FALSE, compress.introns=TRUE, proportio
   #Start creating an empty karyoplot (zoomed in on the correct chromosome) and get the KaryoPlot object
   gp$global.kp <- karyoploteR::plotKaryotype(zoom=exons[1], plot.type=2, labels.plotter = NULL, ideogram.plotter = NULL, plot.params=plot.params, genome=cust.genome) #The zoom used here is not used to plot anything, but sets kp in the correct state
 
-  #And prepare the list of KaryoPlot objecrts needed to plot
+  #And prepare the list of KaryoPlot objects needed to plot
   #Now create a modified copy of this KaryoPlot adapted to each plotted region
   gp$regions.kp <- list()
   #Iteratively make the left margin bigger to plot each region at its position

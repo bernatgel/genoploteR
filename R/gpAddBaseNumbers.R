@@ -43,12 +43,6 @@
 #D'altra banda, funció per a determinar les posicions dels ticks grans  i petits.
 
 
-#TODO: Reimplement here from scratch to:
-# - Allow moving the ruler around
-# - Getting at least one tick per exon (first base ideally?)
-# - Possibility of setting the numbers to only to ticks per exon (first and last base)
-# - Selecting between genomic and cDNA bases (genomic could actually use the genomic2cDNA function to compute?)
-# - Decide whether to label number introns
 
 #internal
 toLabel <- function(n, add.units=TRUE, digits=2, shorten=TRUE, cDNA=FALSE) {
@@ -66,13 +60,15 @@ toLabel <- function(n, add.units=TRUE, digits=2, shorten=TRUE, cDNA=FALSE) {
 
 
 gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE,
-                             add.horizontal.line=FALSE,
+                             add.horizontal.line=FALSE, add.minor.ticks=TRUE,
                              custom.labels=NULL, ticks.in.introns=TRUE,
                              position="below.gene", inverted=FALSE,
-                             add.units=TRUE, digits=2, shorten.labels=TRUE, cDNA=FALSE, cex=0.6,
+                             add.units=TRUE, digits=2, shorten.labels=TRUE, cDNA=FALSE,
+                             cex=0.6, label.col=NULL,
                              tick.dist=500, tick.len=0.2, tick.col=NULL,
-                             minor.tick.dist=100, minor.tick.len=0.1, minor.tick.col=NULL,
-                             r0=0, r1=1, data.panel=1, ...) {
+                             minor.tick.dist=100, minor.tick.len=0.5, minor.tick.col=NULL,
+                             r0=0, r1=1, data.panel=1,
+                             col="black", pos=NULL, ...) {
 
     #TODO: Check arg values
     position <- match.arg(position, c("custom", "above.gene", "below.gene"))
@@ -81,26 +77,49 @@ gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE
     options(scipen=999)
     on.exit(options(scipen=old.scipen), add=TRUE)
 
-    #Define the x position where labels will be plotted
-    if(is.null(custom.labels)) {
-      lab.pos <- numeric()
-      if(label.exon.ends) {
-        lab.pos <- unique(sort(c(lab.pos, start(genoplot$exons), end(genoplot$exons))))
-      }
-      if(label.every.x) {
+    #Define colors
+    if(is.null(label.col)) label.col <- col
+    if(is.null(tick.col)) tick.col <- col
+    if(is.null(minor.tick.col)) minor.tick.col <- col
 
-      }
-    } else {
-      lab.pos <- custom.labels
+
+    #Define the x position where labels will be plotted
+    lab.pos <- numeric()
+    if(!is.null(custom.labels)) {
+      lab.pos <- c(lab.pos, custom.labels)
     }
+    if(label.exon.ends) {
+      lab.pos <- c(lab.pos, start(genoplot$exons), end(genoplot$exons))
+    }
+    if(label.every.x) {
+      first.tick <- floor(start(gp$regions[1])/tick.dist)*tick.dist
+      last.tick <- ceiling(end(gp$regions[length(gp$regions)])/tick.dist)*tick.dist
+      lab.pos <- c(lab.pos, seq(from=first.tick, to=last.tick, by=tick.dist))
+    }
+
+    lab.pos <- sort(unique(lab.pos)) #This unique should not remove custom label names because they are the first in the vector
 
     #If no predefined names for the labels, create them
-    if(is.null(names(lab.pos))) {
-      names(lab.pos) <- mapply(lab.pos, FUN = toLabel, digits = digits, add.units = add.units, shorten=shorten.labels, cDNA=cDNA)
+    if(is.null(names(lab.pos)) || any(names(lab.pos)=="")) {
+      standard.names <- mapply(lab.pos, FUN = toLabel, digits = digits, add.units = add.units, shorten=shorten.labels, cDNA=cDNA)
+      if(is.null(names(lab.pos))) {
+        names(lab.pos) <- standard.names
+      } else {
+        names(lab.pos)[names(lab.pos)==""] <- standard.names[names(lab.pos)==""]
+      }
     }
+
 
     #build a GRanges with the labels position for later filtering by overlaps
     lab.pos.gr <- toGRanges(data.frame(genoplot$chromosome, lab.pos, lab.pos, labels=names(lab.pos), stringsAsFactors=FALSE))
+
+    #Minor ticks
+    if(add.minor.ticks) {
+      first.tick <- floor(start(gp$regions[1])/minor.tick.dist)*minor.tick.dist
+      last.tick <- ceiling(end(gp$regions[length(gp$regions)])/minor.tick.dist)*minor.tick.dist
+      minor.ticks <- seq(from=first.tick, to=last.tick, by=minor.tick.dist)
+      minor.ticks <- toGRanges(genoplot$chromosome, minor.ticks, minor.ticks)
+    }
 
 
     #Define the vertical positions
@@ -122,32 +141,33 @@ gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE
 
     for(i in seq_len(length(genoplot$regions.kp))) {
       kp <- genoplot$regions.kp[[i]]
-      local.lab.pos <- subsetByOverlaps(lab.pos.gr, kp$plot.region)
-      if(add.horizontal.line) {
-        kpAbline(kp, h=ifelse(inverted, 0, 1), r0=r0, r1=r1, ymin=0, ymax=1, col="red", data.panel = data.panel, ...)
+
+      local.lab.pos <- subsetByOverlaps(lab.pos.gr, kp$plot.region) #We need to subset because we cannot activate the clipping (we are plotting out of data.panels)
+
+
+      if(add.minor.ticks) {
+        local.minor.ticks <- subsetByOverlaps(minor.ticks, kp$plot.region)
+        if(inverted) {
+          r0.min <- r0
+          r1.min <- r0+(r1-r0)*minor.tick.len
+        } else {
+          r0.min <- r1-(r1-r0)*minor.tick.len
+          r1.min <- r1
+        }
+        kpSegments(kp, chr=genoplot$chromosome, x0=start(local.minor.ticks), x1=end(local.minor.ticks), y0=0, y1=1, ymin=0, ymax=1, col=minor.tick.col, clipping=FALSE, r0=r0.min, r1=r1.min, data.panel=data.panel, ...)
       }
-      kpSegments(kp, chr=genoplot$chromosome, x0=start(local.lab.pos), x1=end(local.lab.pos), y0=0, y1=1, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, ...)
+
+      kpSegments(kp, chr=genoplot$chromosome, x0=start(local.lab.pos), x1=end(local.lab.pos), y0=0, y1=1, ymin=0, ymax=1, col=tick.col, clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, ...)
+      if(add.horizontal.line) {
+        kpAbline(kp, h=ifelse(inverted, 0, 1), r0=r0, r1=r1, ymin=0, ymax=1, col=tick.col, data.panel = data.panel, ...)
+      }
+      kpSegments(kp, chr=genoplot$chromosome, x0=start(local.lab.pos), x1=end(local.lab.pos), y0=0, y1=1, ymin=0, ymax=1, col=tick.col, clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, ...)
       if(inverted) {
-        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=1, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, pos=3, cex=cex, ...)
+        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=1, ymin=0, ymax=1, col=label.col, clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, pos=ifelse(is.null(pos), 3, pos), cex=cex, ...)
       } else {
-        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=0, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, pos=1, cex=cex, ...)
+        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=0, ymin=0, ymax=1, col=label.col, clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, pos=ifelse(is.null(pos), 1, pos), cex=cex, ...)
       }
     }
 
 
 }
-
-# gpAddBaseNumbers <- function(genoplot, tick.dist=500, tick.len=5, add.units=FALSE,
-#                              digits=2, minor.ticks=TRUE,
-#                              minor.tick.dist=100, minor.tick.len=2,  cex=0.5,
-#                              tick.col=NULL, minor.tick.col=NULL, clipping=TRUE,  ...) {
-#   for(i in seq_len(length(genoplot$regions.kp))) {
-#     kpAddBaseNumbers(genoplot$regions.kp[[i]], tick.dist=tick.dist, tick.len=tick.len, add.units=add.units,
-#                      digits=digits, minor.ticks=minor.ticks,
-#                      minor.tick.dist=minor.tick.dist, minor.tick.len=minor.tick.len,  cex=cex,
-#                      tick.col=tick.col, minor.tick.col=minor.tick.col, clipping=clipping,  ...)
-#   }
-# }
-#
-
-

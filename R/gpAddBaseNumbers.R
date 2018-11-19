@@ -124,13 +124,13 @@ gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE
       kp <- genoplot$regions.kp[[i]]
       local.lab.pos <- subsetByOverlaps(lab.pos.gr, kp$plot.region)
       if(add.horizontal.line) {
-        kpAbline(kp, h=ifelse(inverted, 0, 1), r0=r0, r1=r1, ymin=0, ymax=1, col="red", data.panel = "ideogram", ...)
+        kpAbline(kp, h=ifelse(inverted, 0, 1), r0=r0, r1=r1, ymin=0, ymax=1, col="red", data.panel = data.panel, ...)
       }
-      kpSegments(kp, chr=genoplot$chromosome, x0=start(local.lab.pos), x1=end(local.lab.pos), y0=0, y1=1, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel="ideogram", ...)
+      kpSegments(kp, chr=genoplot$chromosome, x0=start(local.lab.pos), x1=end(local.lab.pos), y0=0, y1=1, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, ...)
       if(inverted) {
-        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=1, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel="ideogram", pos=3, cex=cex, ...)
+        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=1, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, pos=3, cex=cex, ...)
       } else {
-        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=0, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel="ideogram", pos=1, cex=cex, ...)
+        kpText(kp, chr=genoplot$chromosome, x=start(local.lab.pos), labels = local.lab.pos$labels, y=0, ymin=0, ymax=1, col="red", clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, pos=1, cex=cex, ...)
       }
     }
 

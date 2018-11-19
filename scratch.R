@@ -1,5 +1,7 @@
 #Scratch Pad
 library(genoploteR)
+library(regioneR)
+
 
 coding.exons <- toGRanges(rep("chr1",3), c(50, 100, 200), c(70, 130, 220))
 non.coding.exons <- toGRanges(rep("chr1", 3), c(20, 45, 221), c(25, 49, 270))
@@ -37,8 +39,9 @@ pp$inner.margin.bases <- 50
 pp$outer.margin.bases <- 200
 gp <- plotGene(exons, show.introns = TRUE, intron.to.exon.ratio = 0.3, plot.params = pp)
 
-gp <- plotGene(exons, show.introns = FALSE, compress.introns = FALSE, proportional.introns = TRUE, intron.length = 600)
-gpAddBaseNumbers(gp, srt=45, cex=0.8, cDNA=TRUE, add.units = FALSE, position="custom", data.panel=1, r0=0, r1=0.2)
+gp <- plotGene(exons, show.introns = TRUE, compress.introns = TRUE, proportional.introns = TRUE, intron.length = 600)
+gpAddBaseNumbers(gp, label.every.x = TRUE, tick.dist = 1000, srt=45, cex=0.8, cDNA=FALSE, add.units = TRUE, position="custom", data.panel=2, r0=0.95, r1=1)
+gpAddBaseNumbers(gp, label.every.x = TRUE, tick.dist = 1000, add.minor.ticks = TRUE, srt=90, pos=2, cex=0.8, add.horizontal.line = TRUE, cDNA=FALSE, add.units = TRUE, position="custom", data.panel=1, r0=0.95, r1=1)
 gpPlotBAMCoverage(gp, data=un1.bam.file)
 gpSegments(gp, chr="chr4", x0=340600, y0=1, x1=348800, y1=0)
 gpAddBaseNumbers(gp)

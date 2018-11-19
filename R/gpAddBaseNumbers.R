@@ -94,7 +94,7 @@ gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE
       lab.pos <- custom.labels
     }
 
-    #If necessary, create the labels themselves
+    #If no predefined names for the labels, create them
     if(is.null(names(lab.pos))) {
       names(lab.pos) <- mapply(lab.pos, FUN = toLabel, digits = digits, add.units = add.units, shorten=shorten.labels, cDNA=cDNA)
     }

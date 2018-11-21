@@ -9,13 +9,15 @@ Description: More about what it does (maybe more than one line)
 License: Artistic-2.0
 Depends:
     R (>= 3.5),
+    karyoploteR,
     regioneR
 Imports:
-    karyoploteR,
     GenomeInfoDb,
     GenomicFeatures,
     GenomicRanges,
-    Rsamtools
+    Rsamtools,
+    S4Vectors,
+    IRanges
 Suggests:
     BiocStyle,
     knitr,

@@ -17,7 +17,8 @@ Imports:
     GenomicRanges,
     Rsamtools,
     S4Vectors,
-    IRanges
+    IRanges,
+    assertthat
 Suggests:
     BiocStyle,
     knitr,

@@ -23,6 +23,7 @@
 #'
 #'
 #' @export plotGene
+#'
 #' @import karyoploteR
 #' @importFrom S4Vectors DataFrame
 #' @importFrom GenomicRanges sort

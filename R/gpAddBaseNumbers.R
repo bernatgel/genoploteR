@@ -147,7 +147,7 @@ gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE
 
     #If no predefined names for the labels, create them
     if(is.null(names(lab.pos)) || any(names(lab.pos)=="")) {
-      standard.names <- mapply(lab.pos, FUN = toLabel, genoplot=genoplot, digits = digits, add.units = add.units, shorten=shorten.labels, cDNA=cDNA)
+      standard.names <- mapply(lab.pos, FUN = function(x) toLabel(genoplot=genoplot, n=x, digits = digits, add.units = add.units, shorten=shorten.labels, cDNA=cDNA))
       if(is.null(names(lab.pos))) {
         names(lab.pos) <- standard.names
       } else {
@@ -201,7 +201,7 @@ gpAddBaseNumbers <- function(genoplot, label.exon.ends=TRUE, label.every.x=FALSE
           r0.min <- r1-(r1-r0)*minor.tick.len
           r1.min <- r1
         }
-        karyoploteR::kpSegments(kp, chr=genoplot$chromosome, x0=GenomicRanges::start(local.minor.ticks), x1=GemomicRanges::end(local.minor.ticks), y0=0, y1=1, ymin=0, ymax=1, col=minor.tick.col, clipping=FALSE, r0=r0.min, r1=r1.min, data.panel=data.panel, ...)
+        karyoploteR::kpSegments(kp, chr=genoplot$chromosome, x0=GenomicRanges::start(local.minor.ticks), x1=GenomicRanges::end(local.minor.ticks), y0=0, y1=1, ymin=0, ymax=1, col=minor.tick.col, clipping=FALSE, r0=r0.min, r1=r1.min, data.panel=data.panel, ...)
       }
 
       karyoploteR::kpSegments(kp, chr=genoplot$chromosome, x0=GenomicRanges::start(local.lab.pos), x1=GenomicRanges::end(local.lab.pos), y0=0, y1=1, ymin=0, ymax=1, col=tick.col, clipping=FALSE, r0=r0, r1=r1, data.panel=data.panel, ...)
